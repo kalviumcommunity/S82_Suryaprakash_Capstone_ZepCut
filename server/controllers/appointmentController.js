@@ -54,7 +54,7 @@ exports.updateAppointment = async (req, res) => {
       if (!appt) return res.status(404).json({ message: 'Appointment not found' });
       res.status(200).json(appt);
     } catch (err) {
-      res.status(400).json({ error: err.message });
+      res.status(500).json({ error: err.message });
     }
   };
   

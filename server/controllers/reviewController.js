@@ -37,13 +37,26 @@ exports.getReviewsForUser = async (req, res) => {
 // Update a review
 exports.updateReview = async (req, res) => {
     try {
-      const review = await Review.findByIdAndUpdate(req.params.id, req.body, { new: true });
-      if (!review) return res.status(404).json({ message: 'Review not found' });
+      const review = await Review.findById(req.params.id);
+  
+      if (!review) return res.status(404).json({ error: "Review not found" });
+  
+      if (review.reviewer.toString() !== req.user.id) {
+        return res.status(403).json({ error: "Unauthorized to update this review" });
+      }
+  
+      const allowedFields = ['rating', 'comment'];
+      for (let field of allowedFields) {
+        if (req.body[field]) review[field] = req.body[field];
+      }
+  
+      await review.save();
       res.status(200).json(review);
     } catch (err) {
-      res.status(400).json({ error: err.message });
+      res.status(500).json({ error: err.message });
     }
   };
+  
   
 
 
