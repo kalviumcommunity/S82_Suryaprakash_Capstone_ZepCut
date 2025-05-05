@@ -1,5 +1,15 @@
 const JobListing = require('../models/JobListing');
 
+// Create a job listing (by salon)
+exports.createJobListing = async (req, res) => {
+  try {
+    const job = new JobListing(req.body);
+    await job.save();
+    res.status(201).json(job);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
 
 // Get all job listings
 exports.getAllJobListings = async (req, res) => {
@@ -21,5 +31,3 @@ exports.getJobListingById = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
-
