@@ -1,7 +1,18 @@
 const Appointment = require('../models/Appointment');
+const Joi = require('joi');
 
-// Create appointment
+const appointmentSchema = Joi.object({
+  user: Joi.string().required(),
+  salon: Joi.string().required(),
+  date: Joi.date().iso().required(),
+  time: Joi.string().required(),
+  service: Joi.string().required(),
+});
+
 exports.createAppointment = async (req, res) => {
+  const { error } = appointmentSchema.validate(req.body);
+  if (error) return res.status(400).json({ error: error.details[0].message });
+
   try {
     const appointment = new Appointment(req.body);
     await appointment.save();
@@ -10,6 +21,7 @@ exports.createAppointment = async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 };
+
 
 // Get all appointments (optionally filtered by userId or salonId)
 exports.getAppointments = async (req, res) => {

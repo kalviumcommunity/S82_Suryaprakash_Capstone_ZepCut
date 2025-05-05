@@ -1,15 +1,31 @@
 const User = require('../models/User');
-
+const bcrypt = require('bcrypt');
 // Create user
 exports.createUser = async (req, res) => {
-  try {
-    const user = new User(req.body);
-    await user.save();
-    res.status(201).json(user);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-};
+    try {
+      const { name, email, password, role } = req.body;
+  
+      if (!password) return res.status(400).json({ error: "Password is required" });
+  
+      const hashedPassword = await bcrypt.hash(password, 10);
+  
+      const user = new User({
+        name,
+        email,
+        password: hashedPassword,
+        role,
+      });
+  
+      await user.save();
+  
+      const userSafe = { ...user._doc };
+      delete userSafe.password;
+  
+      res.status(201).json(userSafe);
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  };
 
 // Get all users with pagination and field filtering
 exports.getAllUsers = async (req, res) => {
