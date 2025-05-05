@@ -47,4 +47,16 @@ exports.getAppointmentById = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+// Update Appointment
+exports.updateAppointment = async (req, res) => {
+    try {
+      const appt = await Appointment.findByIdAndUpdate(req.params.id, req.body, { new: true });
+      if (!appt) return res.status(404).json({ message: 'Appointment not found' });
+      res.status(200).json(appt);
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  };
+  
 
+  

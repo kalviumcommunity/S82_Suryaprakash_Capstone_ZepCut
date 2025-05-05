@@ -34,5 +34,17 @@ exports.getReviewsForUser = async (req, res) => {
 };
 
 
+// Update a review
+exports.updateReview = async (req, res) => {
+    try {
+      const review = await Review.findByIdAndUpdate(req.params.id, req.body, { new: true });
+      if (!review) return res.status(404).json({ message: 'Review not found' });
+      res.status(200).json(review);
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  };
+  
+
 
 

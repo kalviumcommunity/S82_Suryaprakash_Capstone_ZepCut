@@ -31,3 +31,14 @@ exports.getJobListingById = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+// Update job listing
+exports.updateJobListing = async (req, res) => {
+    try {
+      const updatedJob = await JobListing.findByIdAndUpdate(req.params.id, req.body, { new: true });
+      if (!updatedJob) return res.status(404).json({ message: 'Job not found' });
+      res.status(200).json(updatedJob);
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  };
+  
