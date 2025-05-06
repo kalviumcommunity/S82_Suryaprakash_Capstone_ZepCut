@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const jobListingSchema = new mongoose.Schema({
   salonId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
@@ -14,4 +14,4 @@ const jobListingSchema = new mongoose.Schema({
   applications: [{ type: mongoose.Schema.Types.ObjectId, ref: 'JobApplication' }]
 });
 
-module.exports = mongoose.model('JobListing', jobListingSchema);
+export default mongoose.model('JobListing', jobListingSchema);

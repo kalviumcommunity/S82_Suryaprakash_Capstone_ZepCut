@@ -1,42 +1,63 @@
-const User = require('../models/User');
-const bcrypt = require('bcrypt');
-// Create user
-exports.createUser = async (req, res) => {
-    try {
-      const { name, email, password, role } = req.body;
-  
-      if (!password) return res.status(400).json({ error: "Password is required" });
-  
-      const hashedPassword = await bcrypt.hash(password, 10);
-  
-      const user = new User({
-        name,
-        email,
-        password: hashedPassword,
-        role,
-      });
-  
-      await user.save();
-  
-      const userSafe = { ...user._doc };
-      delete userSafe.password;
-  
-      res.status(201).json(userSafe);
-    } catch (err) {
-      res.status(400).json({ error: err.message });
-    }
-  };
+import User from '../src/models/User.model.js';
+import bcrypt from 'bcrypt';
 
-// Get all users with pagination and field filtering
-exports.getAllUsers = async (req, res) => {
+// Manual validation function
+function validateUserData(data) {
+  const { name, email, password, role } = data;
+  if (!name || !email || !password || !role) return 'All fields (name, email, password, role) are required.';
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) return 'Invalid email format.';
+
+  if (password.length < 6) return 'Password must be at least 6 characters.';
+
+  const validRoles = ['customer', 'salon', 'admin'];
+  if (!validRoles.includes(role)) return 'Role must be customer, salon, or admin.';
+
+  return null;
+}
+
+// Create User
+export const createUser = async (req, res) => {
+  const error = validateUserData(req.body);
+  if (error) return res.status(400).json({ error });
+
+  try {
+    const { name, email, password, role } = req.body;
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) return res.status(409).json({ error: 'Email already in use' });
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = new User({
+      name,
+      email,
+      password: hashedPassword,
+      role,
+    });
+
+    await user.save();
+
+    const userSafe = { ...user._doc };
+    delete userSafe.password;
+
+    res.status(201).json(userSafe);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+
+// Get all users with pagination & field filtering
+export const getAllUsers = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    const users = await User.find({}, 'name email role profileImage') // limited fields
-    .skip(skip)
-    .limit(limit);
+    const users = await User.find({}, 'name email role profileImage')
+      .skip(skip)
+      .limit(limit);
 
     const total = await User.countDocuments();
 
@@ -44,40 +65,39 @@ exports.getAllUsers = async (req, res) => {
       total,
       page,
       totalPages: Math.ceil(total / limit),
-      users
+      users,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-// Get user by ID
-exports.getUserById = async (req, res) => {
+// Get user by ID (excluding password)
+export const getUserById = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id).select('-password'); // exclude sensitive fields
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    const user = await User.findById(req.params.id).select('-password');
+    if (!user) return res.status(404).json({ error: 'User not found' });
     res.status(200).json(user);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-// Update user details
-exports.updateUser = async (req, res) => {
-    try {
-      const allowedFields = ['name', 'email', 'phone', 'address', 'profilePicture'];
-      const updateData = {};
-  
-      for (let key of allowedFields) {
-        if (req.body[key]) updateData[key] = req.body[key];
-      }
-  
-      const updatedUser = await User.findByIdAndUpdate(req.params.id, updateData, { new: true });
-  
-      res.status(200).json(updatedUser);
-    } catch (err) {
-      res.status(500).json({ error: err.message });
+// Update user (only allowed fields)
+export const updateUser = async (req, res) => {
+  try {
+    const allowedFields = ['name', 'email', 'phone', 'address', 'profileImage'];
+    const updateData = {};
+
+    for (let key of allowedFields) {
+      if (req.body[key]) updateData[key] = req.body[key];
     }
-  };
-  
-  
+
+    const updatedUser = await User.findByIdAndUpdate(req.params.id, updateData, { new: true }).select('-password');
+    if (!updatedUser) return res.status(404).json({ error: 'User not found' });
+
+    res.status(200).json(updatedUser);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};

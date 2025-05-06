@@ -1,4 +1,5 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
+
 
 const jobApplicationSchema = new mongoose.Schema({
   jobId: { type: mongoose.Schema.Types.ObjectId, ref: 'JobListing' },
@@ -8,4 +9,4 @@ const jobApplicationSchema = new mongoose.Schema({
   appliedAt: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model('JobApplication', jobApplicationSchema);
+export default mongoose.model('JobApplication', jobApplicationSchema);
