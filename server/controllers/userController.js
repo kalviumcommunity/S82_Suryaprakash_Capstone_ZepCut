@@ -1,5 +1,5 @@
 import User from '../src/models/User.model.js';
-const bcrypt = require('bcrypt');
+import bcrypt from 'bcrypt';
 
 // Manual validation function
 function validateUserData(data) {
