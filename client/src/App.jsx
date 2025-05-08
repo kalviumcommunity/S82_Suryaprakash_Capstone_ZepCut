@@ -5,7 +5,7 @@ function App() {
 
   return (
     <>
-      <h2>Zep-Cut</h2>
+      <h2>Zep-Cut 2</h2>
     </>
   )
 }
