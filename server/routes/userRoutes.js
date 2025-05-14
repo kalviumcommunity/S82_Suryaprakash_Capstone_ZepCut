@@ -5,7 +5,8 @@ import {
   createUser,
   getAllUsers,
   getUserById,
-  updateUser
+  updateUser,
+  deleteUser
 } from '../controllers/userController.js';
 
 // POST: Create a new user
@@ -19,5 +20,6 @@ router.get('/:id', getUserById);
 
 // PUT: Update user by ID
 router.put('/:id', updateUser);
-
+// .
+router.delete('/:id', deleteUser);
 export default router;
