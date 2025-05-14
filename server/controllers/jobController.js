@@ -47,3 +47,15 @@ export const updateJobListing = async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 };
+// Delete job listing
+export const deleteJobListing = async (req, res) => {
+  try {
+    const deletedJob = await JobListing.findByIdAndDelete(req.params.id);
+    if (!deletedJob) {
+      return res.status(404).json({ message: 'Job not found' });
+    }
+    res.status(200).json({ message: 'Job listing deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
