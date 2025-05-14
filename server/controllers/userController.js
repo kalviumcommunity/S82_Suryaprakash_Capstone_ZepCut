@@ -4,15 +4,17 @@ import bcrypt from 'bcrypt';
 // Manual validation function
 function validateUserData(data) {
   const { name, email, password, role } = data;
-  if (!name || !email || !password || !role) return 'All fields (name, email, password, role) are required.';
+  if (!name || !email || !password || !role)
+    return 'All fields (name, email, password, role) are required.';
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) return 'Invalid email format.';
 
   if (password.length < 6) return 'Password must be at least 6 characters.';
 
-  const validRoles = ['customer', 'salon', 'admin'];
-  if (!validRoles.includes(role)) return 'Role must be customer, salon, or admin.';
+  const validRoles = ['customer', 'salon', 'barber', 'admin'];
+  if (!validRoles.includes(role))
+    return 'Role must be customer, salon, barber, or admin.';
 
   return null;
 }
@@ -23,10 +25,10 @@ export const createUser = async (req, res) => {
   if (error) return res.status(400).json({ error });
 
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, phone, address, location, profilePhotoUrl } = req.body;
 
     const existingUser = await User.findOne({ email });
-    if (existingUser) return res.status(409).json({ error: 'Email already in use' });
+    if (existingUser) return res.status(400).json({ error: 'Email already in use' });
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -35,6 +37,10 @@ export const createUser = async (req, res) => {
       email,
       password: hashedPassword,
       role,
+      phone,
+      address,
+      location,
+      profilePhotoUrl
     });
 
     await user.save();
@@ -44,7 +50,7 @@ export const createUser = async (req, res) => {
 
     res.status(201).json(userSafe);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    res.status(500).json({ error: err.message });
   }
 };
 
@@ -55,7 +61,7 @@ export const getAllUsers = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    const users = await User.find({}, 'name email role profileImage')
+    const users = await User.find({}, 'name email role phone profilePhotoUrl')
       .skip(skip)
       .limit(limit);
 
@@ -86,14 +92,21 @@ export const getUserById = async (req, res) => {
 // Update user (only allowed fields)
 export const updateUser = async (req, res) => {
   try {
-    const allowedFields = ['name', 'email', 'phone', 'address', 'profileImage'];
+    const allowedFields = ['name', 'email', 'phone', 'address', 'profilePhotoUrl', 'location', 'role'];
     const updateData = {};
 
     for (let key of allowedFields) {
-      if (req.body[key]) updateData[key] = req.body[key];
+      if (req.body[key] !== undefined) {
+        updateData[key] = req.body[key];
+      }
     }
 
-    const updatedUser = await User.findByIdAndUpdate(req.params.id, updateData, { new: true }).select('-password');
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      { new: true }
+    ).select('-password');
+
     if (!updatedUser) return res.status(404).json({ error: 'User not found' });
 
     res.status(200).json(updatedUser);
