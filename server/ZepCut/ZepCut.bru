@@ -1,0 +1,28 @@
+meta {
+  name: ZepCut
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:5000/api/users/
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "surya",
+    "email": "suryan@example.com",
+    "password": "surya123",
+    "role": "customer",
+    "phone": 987653210,
+    "profilePhotoUrl": "https://example.com/sneha.jpg",
+    "location": {
+      "type": "Point",
+      "coordinates": [77.594, 12.971]
+    },
+    "address": "Koramangala, Bangalore"
+  }
+  
+}
