@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-
+// entities and schema
 const reviewSchema = new mongoose.Schema({
   reviewerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   revieweeId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
