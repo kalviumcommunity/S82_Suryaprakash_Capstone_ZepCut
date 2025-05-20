@@ -6,6 +6,8 @@ import userRoutes from './routes/userRoutes.js';  // Updated to use import
 import jobRoutes from './routes/jobRoutes.js';
 import appointmentRoutes from './routes/appointmentRoutes.js';
 import reviewRoutes from './routes/reviewRoutes.js';
+import authRoutes from './routes/authRoutes.js';
+
 
 dotenv.config();
 
@@ -21,6 +23,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/jobs', jobRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/reviews', reviewRoutes);
+app.use('/api/auth', authRoutes);
 
 // Test route
 app.get('/', (req, res) => {

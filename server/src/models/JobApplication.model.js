@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-
+// entities and schema
 const jobApplicationSchema = new mongoose.Schema({
   jobId: { type: mongoose.Schema.Types.ObjectId, ref: 'JobListing' },
   barberId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },

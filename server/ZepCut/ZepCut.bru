@@ -5,24 +5,15 @@ meta {
 }
 
 get {
-  url: http://localhost:5000/api/users/
+  url: http://localhost:5000/api/auth/user
   body: json
   auth: inherit
 }
 
 body:json {
   {
-    "name": "surya",
-    "email": "suryan@example.com",
-    "password": "surya123",
-    "role": "customer",
-    "phone": 987653210,
-    "profilePhotoUrl": "https://example.com/sneha.jpg",
-    "location": {
-      "type": "Point",
-      "coordinates": [77.594, 12.971]
-    },
-    "address": "Koramangala, Bangalore"
+    "email": "surya@example.com",
+    "password": "password123"
   }
   
 }

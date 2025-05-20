@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-
+// entities and schema
 const appointmentSchema = new mongoose.Schema({
   customerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   professionalId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
