@@ -15,6 +15,7 @@
     "debug": "^4.4.0",
     "dotenv": "16.0.0",
     "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
     "mongoose": "6.8.2",
     "nodemon": "2.0.20"
   },

@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-
+// entities and schema
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
