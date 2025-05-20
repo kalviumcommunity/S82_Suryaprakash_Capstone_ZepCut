@@ -9,17 +9,15 @@ import {
   deleteUser
 } from '../controllers/userController.js';
 
-// POST: Create a new user
-router.post('/register', createUser);   // Use `/register` instead of root for clarity
+import { verifyToken } from '../middleware/authmiddleware.js'; // 👈 Import the middleware
 
-// GET: Get all users
-router.get('/', getAllUsers);
+// PUBLIC ROUTE - User Registration
+router.post('/register', createUser); // POST /api/users/register
 
-// GET: Get user by ID
-router.get('/:id', getUserById);
+// PROTECTED ROUTES - Require valid JWT
+router.get('/', verifyToken, getAllUsers);      // GET /api/users
+router.get('/:id', verifyToken, getUserById);   // GET /api/users/:id
+router.put('/:id', verifyToken, updateUser);    // PUT /api/users/:id
+router.delete('/:id', verifyToken, deleteUser); // DELETE /api/users/:id
 
-// PUT: Update user by ID
-router.put('/:id', updateUser);
-// .
-router.delete('/:id', deleteUser);
 export default router;
