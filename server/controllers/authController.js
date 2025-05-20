@@ -67,10 +67,10 @@ export const loginUser = async (req, res) => {
   }
 };
 //Get details for logind users
-export const listUser= async(req,res)=>{
+export const listUser = async(req,res)=>{
       try{
-        const user=await User.find({});
-        res.status(200).json(user);
+        const users = await User.find({}).select('-password');
+        res.status(200).json(users);
     }catch(err){
         res.status(500).json({error:err.message});
     }
