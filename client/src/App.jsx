@@ -31,7 +31,7 @@ function App() {
           <button>Sign in with Google</button>
         </a>
       ) : (
-        <p>You are logged in with token:<br />{token}</p>
+        <p>You are successfully logged in!</p>
       )}
     </>
   );
