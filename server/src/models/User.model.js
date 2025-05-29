@@ -38,9 +38,16 @@ const userSchema = new mongoose.Schema({
       required: true
     }
   },
+  password: {
+    type: String,
+    required: true,
+    minlength: 6,
+    select: false
+  },
   address: {
     type: String,
-    default: ''
+    default: '',
+    required:true
   }
 }, { timestamps: true });
 

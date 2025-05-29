@@ -6,12 +6,14 @@ import {
   getAllUsers,
   getUserById,
   updateUser,
-  deleteUser
+  deleteUser,
+  loginUser,
 } from '../controllers/userController.js';
 
 import { verifyToken } from '../middleware/authmiddleware.js'; // 👈 Import the middleware
 
 // PUBLIC ROUTE - User Registration
+router.post('/login', loginUser); 
 router.post('/register', createUser); // POST /api/users/register
 
 // PROTECTED ROUTES - Require valid JWT

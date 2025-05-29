@@ -1,25 +1,28 @@
 import User from '../src/models/User.model.js';
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken'; // Don't forget this
+// Make sure to have JWT_SECRET in your .env
 
 // Manual validation function
 function validateUserData(data) {
-  const { name, email, password, role } = data;
-  if (!name || !email || !password || !role)
-    return 'All fields (name, email, password, role) are required.';
+  const { name, email, password, role, phone, location } = data;
+  if (!name || !email || !password || !role || !phone || !location)
+    return 'All fields (name, email, password, role, phone, location) are required.';
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) return 'Invalid email format.';
+  const validRoles = ['customer', 'salon', 'barber'];
+  if (!validRoles.includes(role)) return 'Invalid role';
 
-  if (password.length < 6) return 'Password must be at least 6 characters.';
-
-  const validRoles = ['customer', 'salon', 'barber', 'admin'];
-  if (!validRoles.includes(role))
-    return 'Role must be customer, salon, barber, or admin.';
+  if (
+    !location.type || location.type !== 'Point' ||
+    !Array.isArray(location.coordinates) ||
+    location.coordinates.length !== 2 ||
+    !location.coordinates.every(coord => typeof coord === 'number')
+  ) return 'Invalid location';
 
   return null;
 }
 
-// Create User
+// A - Create User
 export const createUser = async (req, res) => {
   const error = validateUserData(req.body);
   if (error) return res.status(400).json({ error });
@@ -50,11 +53,25 @@ export const createUser = async (req, res) => {
 
     res.status(201).json(userSafe);
   } catch (err) {
+    console.error('CreateUser error:', err);
     res.status(500).json({ error: err.message });
   }
 };
 
-// Get all users with pagination & field filtering
+// B - Delete User
+export const deleteUser = async (req, res) => {
+  try {
+    const deletedUser = await User.findByIdAndDelete(req.params.id);
+    if (!deletedUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.status(200).json({ message: 'User deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// G - Get All Users (with pagination)
 export const getAllUsers = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -78,7 +95,7 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
-// Get user by ID (excluding password)
+// G - Get User By ID
 export const getUserById = async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select('-password');
@@ -89,7 +106,57 @@ export const getUserById = async (req, res) => {
   }
 };
 
-// Update user (only allowed fields)
+// L - Login User
+export const loginUser = async (req, res) => {
+  try {
+    console.log('Login req.body:', req.body); // Keep this line
+    const { email, password } = req.body;
+
+    // Explicitly select the password field
+    const user = await User.findOne({ email }).select('+password');
+
+    console.log('User object after findOne:', user); // Keep this line
+
+    if (!user) return res.status(400).json({ message: 'Invalid credentials' });
+
+    console.log('user.password before check:', user.password); // <--- ENSURE THIS LINE IS HERE
+    console.log('DEBUG_PASSWORD_CHECK: user.password before check:', user.password);
+
+
+    // Now user.password should be available if select('+password') worked
+    if (!password || !user.password)
+      return res.status(400).json({ message: 'Missing credentials' });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
+
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+      expiresIn: '1h',
+    });
+
+    // ✅ Only send token (or token + safe user info)
+    res.status(200).json({
+      token,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        phone: user.phone,
+        profilePhotoUrl: user.profilePhotoUrl,
+      },
+    });
+  } catch (err) {
+    console.error('Login Error:', err.message, err.stack);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+
+
+
+
+// U - Update User
 export const updateUser = async (req, res) => {
   try {
     const allowedFields = ['name', 'email', 'phone', 'address', 'profilePhotoUrl', 'location', 'role'];
@@ -110,18 +177,6 @@ export const updateUser = async (req, res) => {
     if (!updatedUser) return res.status(404).json({ error: 'User not found' });
 
     res.status(200).json(updatedUser);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-// Delete a user
-export const deleteUser = async (req, res) => {
-  try {
-    const deletedUser = await User.findByIdAndDelete(req.params.id);
-    if (!deletedUser) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-    res.status(200).json({ message: 'User deleted successfully' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
