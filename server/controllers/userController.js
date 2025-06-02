@@ -109,32 +109,43 @@ export const getUserById = async (req, res) => {
 // L - Login User
 export const loginUser = async (req, res) => {
   try {
-    console.log('Login req.body:', req.body); // Keep this line
+    console.log('Login req.body:', req.body);
+
     const { email, password } = req.body;
 
-    // Explicitly select the password field
+    // Find user and explicitly select password
     const user = await User.findOne({ email }).select('+password');
+    // console.log('User object after findOne:', user);
 
-    console.log('User object after findOne:', user); // Keep this line
+    if (!user) {
+      console.log('User not found for email:', email);
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
 
-    if (!user) return res.status(400).json({ message: 'Invalid credentials' });
-
-    console.log('user.password before check:', user.password); // <--- ENSURE THIS LINE IS HERE
-    console.log('DEBUG_PASSWORD_CHECK: user.password before check:', user.password);
-
-
-    // Now user.password should be available if select('+password') worked
-    if (!password || !user.password)
+    if (!password || !user.password) {
+      console.log('Missing password in request or database');
       return res.status(400).json({ message: 'Missing credentials' });
+    }
 
+    console.log('Stored hashed password:', user.password);
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
+    console.log('Password match result:', isMatch);
 
+    if (!isMatch) {
+      console.log('Incorrect password provided');
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
+    if (isMatch){
+      console.log('User object after findOne:', user);
+    }
+
+    // Only generate token if password is correct
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
       expiresIn: '1h',
     });
 
-    // ✅ Only send token (or token + safe user info)
+    console.log('Generated token:', token); // Optional: for debugging
+
     res.status(200).json({
       token,
       user: {
